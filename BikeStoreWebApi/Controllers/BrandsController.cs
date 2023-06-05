@@ -29,6 +29,7 @@ namespace BikeStores.MSSQL.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Brand>>> GetBrands()
         {
+            _rabbitMqSender.PublishToMessageQueue("brand.add", "Get Brands method was called");
             return await _context.Brands.ToListAsync();
         }
 
@@ -37,6 +38,7 @@ namespace BikeStores.MSSQL.Controllers
         public async Task<ActionResult<Brand>> GetBrand(int id)
         {
             var brand = await _context.Brands.FindAsync(id);
+           
 
             if (brand == null)
             {
@@ -61,11 +63,7 @@ namespace BikeStores.MSSQL.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                var integrationEventData = JsonConvert.SerializeObject(new
-                {
-                    BrandId = brand.BrandId,
-                });
-                _rabbitMqSender.PublishToMessageQueue("brand.add", integrationEventData);
+                
             }
             catch (DbUpdateConcurrencyException)
             {
