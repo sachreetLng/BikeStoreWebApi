@@ -6,28 +6,38 @@ namespace BikeStores.MSSQL.Service
 {
     public class RabbitMqSender : IRabbitMqSender
     {
-        public void PublishToMessageQueue(string integrationEvent, string eventData)
+        public bool PublishToMessageQueue(string integrationEvent, string eventData)
         {
-            var factory = new ConnectionFactory();
-            using (var connection = factory.CreateConnection())
+            try
             {
-
-                using (var channel = connection.CreateModel())
+                var factory = new ConnectionFactory();
+                using (var connection = factory.CreateConnection())
                 {
 
-                    var body = Encoding.UTF8.GetBytes(eventData);
-                    var properties = channel.CreateBasicProperties();
-                    properties.Persistent = true;
+                    using (var channel = connection.CreateModel())
+                    {
 
-                    channel.BasicPublish(
-                        exchange: "library",
-                        routingKey: integrationEvent,
-                        basicProperties: properties,
-                        body: body);
+                        var body = Encoding.UTF8.GetBytes(eventData);
+                        var properties = channel.CreateBasicProperties();
+                        properties.Persistent = true;
 
+                        channel.BasicPublish(
+                            exchange: "library",
+                            routingKey: integrationEvent,
+                            basicProperties: properties,
+                            body: body);
+
+                    }
                 }
+                Console.WriteLine(integrationEvent);
+                return true;
+
             }
-            Console.WriteLine(integrationEvent);
+            catch (Exception ex)
+            {
+
+            }
+          return false;
         }
     }
 }

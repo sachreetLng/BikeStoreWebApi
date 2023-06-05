@@ -2,6 +2,6 @@
 {
     public interface IRabbitMqSender
     {
-        public void PublishToMessageQueue(string integrationEvent, string eventData);
+        public bool PublishToMessageQueue(string integrationEvent, string eventData);
     }
 }
