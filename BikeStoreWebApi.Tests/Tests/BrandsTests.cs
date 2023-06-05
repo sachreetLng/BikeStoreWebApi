@@ -29,20 +29,6 @@ namespace BikeStoreWebApi.Tests.Tests
             _mockRabbitMQ = new Mock<IRabbitMqSender>();
         }
 
-        //[SetUp]
-        //public void Setup(DatabaseFixture databaseFixture, ContainerFixture containerFixture)
-        //{
-        //    this._dataContext = databaseFixture.DataContext;
-        //    this._container = containerFixture.Container;
-        //}
-
-
-
-        //public BrandsTests(DatabaseFixture databaseFixture, ContainerFixture containerFixture)
-        //{
-        //    this._dataContext = databaseFixture.DataContext;
-        //    this._container = containerFixture.Container;
-        //}
 
         [Test]
         public async Task GetBrand_Function_Should_Return_BrandValues_According_To_ID_Passed_In_Parameter_Async()
