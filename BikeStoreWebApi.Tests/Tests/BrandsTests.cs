@@ -5,6 +5,7 @@ using BikeStores.MSSQL.Service;
 using BikeStoreWebApi.Tests.Fixtures;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using StructureMap;
 using System;
@@ -96,6 +97,7 @@ namespace BikeStoreWebApi.Tests.Tests
             };
             _dataContext.Brands.Add(brand);
             _dataContext.SaveChanges();
+            _dataContext.ChangeTracker.Clear();
 
             var brandController = new BrandsController(_dataContext, _mockRabbitMQ.Object);
             _mockRabbitMQ.Setup(x => x.PublishToMessageQueue(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -110,9 +112,7 @@ namespace BikeStoreWebApi.Tests.Tests
             //Act
             var result = await brandController.PutBrand(id, updatebrand);
 
-            Assert.NotNull(result);
-            //Assert.That(systemUnderTest.Value.Any(x=>x.BrandId==1));
-            var test = _dataContext.Brands.First(x => x.BrandId == id).BrandName;
+            Assert.NotNull(result); //TODO replace this asser to check status code =200
             Assert.That(updatebrand.BrandName, Is.EqualTo(_dataContext.Brands.First(x => x.BrandId == id).BrandName));
 
 
@@ -123,13 +123,14 @@ namespace BikeStoreWebApi.Tests.Tests
         public async Task PostBrand_Should_Add_Brand_In_DbAsync()
         {
             //Arrange
+            int brandId = 19;
             var brand = new Brand
             {
-                BrandId = 12,
+                BrandId = brandId,
                 BrandName = "Test",
             };
-            _dataContext.Brands.Add(brand);
-            _dataContext.SaveChanges();
+            //_dataContext.Brands.Add(brand);
+            //_dataContext.SaveChanges();
 
             var brandController = new BrandsController(_dataContext, _mockRabbitMQ.Object);
             _mockRabbitMQ.Setup(x => x.PublishToMessageQueue(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -138,10 +139,8 @@ namespace BikeStoreWebApi.Tests.Tests
             var result = await brandController.PostBrand(brand);
 
             //Assert
-            Assert.IsInstanceOf<CreatedAtActionResult>(result);
-            //var createdResult = (CreatedAtActionResult)result.Result;
-            //Assert.Equals(createdResult.Value, getresult.Value);
-
+            Assert.NotNull(result.Result); //TODO replace this assert to check staus code =201
+            Assert.True(_dataContext.Brands.Any(x => x.BrandId == brandId));
         }
     }
 }
