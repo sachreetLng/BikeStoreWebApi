@@ -3,6 +3,7 @@ using BikeStores.MSSQL.Data;
 using BikeStores.MSSQL.Models;
 using BikeStores.MSSQL.Service;
 using BikeStoreWebApi.Tests.Fixtures;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Tasks;
 using Moq;
 using StructureMap;
@@ -80,6 +81,66 @@ namespace BikeStoreWebApi.Tests.Tests
             //Assert.That(systemUnderTest.Value.Any(x=>x.BrandId==1));
             Assert.That(systemUnderTest.Value, Is.EquivalentTo(listBrannds));
 
+
+        }
+
+        [Test]
+        public async Task PutBrand_Should_Update_Brand_In_DbAsync()
+        {
+            //Arrange
+            int id = 13;
+            var brand = new Brand
+            {
+                BrandId = id,
+                BrandName = "Test",
+            };
+            _dataContext.Brands.Add(brand);
+            _dataContext.SaveChanges();
+
+            var brandController = new BrandsController(_dataContext, _mockRabbitMQ.Object);
+            _mockRabbitMQ.Setup(x => x.PublishToMessageQueue(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+            var updatebrand = new Brand
+            {
+                BrandId = id,
+                BrandName = "TestBrand",
+
+            };
+
+            //Act
+            var result = await brandController.PutBrand(id, updatebrand);
+
+            Assert.NotNull(result);
+            //Assert.That(systemUnderTest.Value.Any(x=>x.BrandId==1));
+            var test = _dataContext.Brands.First(x => x.BrandId == id).BrandName;
+            Assert.That(updatebrand.BrandName, Is.EqualTo(_dataContext.Brands.First(x => x.BrandId == id).BrandName));
+
+
+        }
+
+
+        [Test]
+        public async Task PostBrand_Should_Add_Brand_In_DbAsync()
+        {
+            //Arrange
+            var brand = new Brand
+            {
+                BrandId = 12,
+                BrandName = "Test",
+            };
+            _dataContext.Brands.Add(brand);
+            _dataContext.SaveChanges();
+
+            var brandController = new BrandsController(_dataContext, _mockRabbitMQ.Object);
+            _mockRabbitMQ.Setup(x => x.PublishToMessageQueue(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+            //Act
+            var result = await brandController.PostBrand(brand);
+
+            //Assert
+            Assert.IsInstanceOf<CreatedAtActionResult>(result);
+            //var createdResult = (CreatedAtActionResult)result.Result;
+            //Assert.Equals(createdResult.Value, getresult.Value);
 
         }
     }
